@@ -220,10 +220,10 @@
     .cat {
       position: absolute;
       left: 50%;
-      bottom: max(28px, env(safe-area-inset-bottom));
+      bottom: max(18px, env(safe-area-inset-bottom));
       z-index: 4;
-      width: 118px;
-      height: 126px;
+      width: 150px;
+      height: 178px;
       transform: translateX(-50%);
       transition: filter 140ms ease;
     }
@@ -232,154 +232,27 @@
       filter: drop-shadow(0 0 18px rgba(255, 111, 145, 0.42));
     }
 
-    .tail {
-      position: absolute;
-      right: -18px;
-      bottom: 26px;
-      width: 52px;
-      height: 24px;
-      border: 12px solid #5d4037;
-      border-left: 0;
-      border-bottom: 0;
-      border-radius: 0 36px 0 0;
-      transform: rotate(18deg);
-      transform-origin: left bottom;
-      animation: tail 1.25s ease-in-out infinite alternate;
+    .cat img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 14px 20px rgba(95, 55, 45, 0.18));
+      animation: catFloat 1.8s ease-in-out infinite alternate;
+      pointer-events: none;
     }
 
-    @keyframes tail {
+    @keyframes catFloat {
       to {
-        transform: rotate(32deg);
+        transform: translateY(-5px);
       }
-    }
-
-    .body {
-      position: absolute;
-      left: 24px;
-      right: 24px;
-      bottom: 0;
-      height: 74px;
-      border-radius: 44px 44px 32px 32px;
-      background: linear-gradient(180deg, #fff7ec, #f4dfc8);
-      box-shadow: inset -10px -8px 0 rgba(93, 64, 55, 0.12), 0 12px 24px var(--shadow);
-    }
-
-    .head {
-      position: absolute;
-      left: 15px;
-      right: 15px;
-      top: 10px;
-      height: 82px;
-      border-radius: 48% 48% 45% 45%;
-      background:
-        radial-gradient(ellipse at 50% 62%, #6b463d 0 23%, transparent 24%),
-        linear-gradient(180deg, #fff8ed, #f1d8bf);
-      box-shadow: inset -12px -4px 0 rgba(93, 64, 55, 0.1);
-    }
-
-    .ear {
-      position: absolute;
-      top: -8px;
-      width: 34px;
-      height: 38px;
-      border-radius: 8px 28px 8px 28px;
-      background: #5d4037;
-      transform: rotate(28deg);
-    }
-
-    .ear::after {
-      content: "";
-      position: absolute;
-      inset: 9px 8px 8px;
-      border-radius: inherit;
-      background: #c48f86;
-    }
-
-    .ear.left {
-      left: 14px;
-      transform: rotate(-32deg) scaleX(-1);
-    }
-
-    .ear.right {
-      right: 14px;
-    }
-
-    .stripe {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      width: 12px;
-      height: 24px;
-      border-radius: 999px;
-      background: #5d4037;
-      transform: translateX(-50%);
-      box-shadow: -24px 8px 0 -3px #6b463d, 24px 8px 0 -3px #6b463d;
-    }
-
-    .eye {
-      position: absolute;
-      top: 42px;
-      width: 11px;
-      height: 16px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 28%, #ffffff 0 2px, #72a9e8 3px 8px, #315c88 9px);
-    }
-
-    .eye.left {
-      left: 34px;
-    }
-
-    .eye.right {
-      right: 34px;
-    }
-
-    .nose {
-      position: absolute;
-      left: 50%;
-      top: 57px;
-      width: 12px;
-      height: 9px;
-      border-radius: 50% 50% 60% 60%;
-      background: #f39aaa;
-      transform: translateX(-50%);
-    }
-
-    .mouth {
-      position: absolute;
-      left: 50%;
-      top: 65px;
-      width: 28px;
-      height: 13px;
-      border-bottom: 3px solid #5d3b36;
-      border-radius: 0 0 30px 30px;
-      transform: translateX(-50%);
-    }
-
-    .paw {
-      position: absolute;
-      top: 76px;
-      width: 28px;
-      height: 34px;
-      border-radius: 18px;
-      background: #f8e7d0;
-      box-shadow: 0 6px 10px rgba(95, 55, 45, 0.12);
-    }
-
-    .paw.left {
-      left: 18px;
-      transform: rotate(16deg);
-    }
-
-    .paw.right {
-      right: 18px;
-      transform: rotate(-16deg);
     }
 
     .hint {
       position: absolute;
       left: 18px;
       right: 18px;
-      bottom: calc(max(28px, env(safe-area-inset-bottom)) + 132px);
+      bottom: calc(max(18px, env(safe-area-inset-bottom)) + 184px);
       z-index: 3;
       text-align: center;
       font-size: 0.9rem;
@@ -481,20 +354,8 @@
     <div class="playfield" id="playfield"></div>
     <div class="hint">按住移动小猫，接住掉下来的爱心</div>
 
-    <div class="cat" id="cat" aria-hidden="true">
-      <div class="tail"></div>
-      <div class="body"></div>
-      <div class="head">
-        <div class="ear left"></div>
-        <div class="ear right"></div>
-        <div class="stripe"></div>
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-        <div class="nose"></div>
-        <div class="mouth"></div>
-        <div class="paw left"></div>
-        <div class="paw right"></div>
-      </div>
+    <div class="cat" id="cat">
+      <img src="assets/cat-generated.png" alt="丫蛋小猫">
     </div>
 
     <section class="final" id="final" aria-live="polite">
