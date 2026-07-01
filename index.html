@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>小猫接爱心</title>
+  <style>
+    :root {
+      --peach: #ffb9a6;
+      --rose: #ff6f91;
+      --cream: #fff7e8;
+      --mint: #95d9c3;
+      --ink: #5d3b36;
+      --gold: #ffd36e;
+      --shadow: rgba(95, 55, 45, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #ffe6d8;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+      touch-action: none;
+      user-select: none;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .game {
+      position: relative;
+      width: min(100vw, 480px);
+      height: 100svh;
+      min-height: 560px;
+      max-height: 920px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(255, 211, 110, 0.55) 0 9%, transparent 10%),
+        radial-gradient(circle at 84% 20%, rgba(149, 217, 195, 0.55) 0 8%, transparent 9%),
+        linear-gradient(180deg, #ffe0cf 0%, #fff7e8 52%, #ffd6c8 100%);
+      box-shadow: 0 24px 60px var(--shadow);
+      isolation: isolate;
+    }
+
+    .game::before,
+    .game::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .game::before {
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 2px, transparent 2.5px),
+        radial-gradient(circle, rgba(255, 111, 145, 0.18) 0 4px, transparent 4.5px);
+      background-position: 24px 70px, 80px 180px;
+      background-size: 92px 118px, 138px 156px;
+    }
+
+    .game::after {
+      bottom: -1px;
+      top: auto;
+      height: 28%;
+      background: linear-gradient(180deg, transparent 0%, rgba(255, 185, 166, 0.28) 18%, rgba(255, 185, 166, 0.62) 100%);
+    }
+
+    .hud {
+      position: absolute;
+      top: max(18px, env(safe-area-inset-top));
+      left: 18px;
+      right: 18px;
+      z-index: 5;
+      display: grid;
+      gap: 12px;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h1 {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      font-size: clamp(1.22rem, 6vw, 1.78rem);
+      font-weight: 900;
+      letter-spacing: 0;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .score {
+      flex: 0 0 auto;
+      min-width: 78px;
+      padding: 8px 10px;
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      box-shadow: 0 8px 24px rgba(255, 111, 145, 0.14);
+      font-weight: 900;
+      font-size: clamp(0.86rem, 3.8vw, 1rem);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .progress {
+      height: 14px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .progress span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--mint), var(--gold), var(--rose));
+      transition: width 220ms ease;
+    }
+
+    .note {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 25%;
+      z-index: 6;
+      display: grid;
+      place-items: center;
+      min-height: 96px;
+      padding: 18px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 18px 44px rgba(95, 55, 45, 0.16);
+      text-align: center;
+      font-size: clamp(1rem, 4.7vw, 1.28rem);
+      font-weight: 800;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      opacity: 0;
+      transform: translateY(18px) scale(0.96);
+      transition: opacity 220ms ease, transform 220ms ease;
+      pointer-events: none;
+    }
+
+    .note.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .playfield {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .heart {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      transform: rotate(-45deg);
+      border-radius: 8px 0 8px 8px;
+      background: linear-gradient(135deg, #ff4d7d, #ff8aa5);
+      box-shadow: 0 8px 16px rgba(255, 79, 125, 0.22);
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: inherit;
+    }
+
+    .heart::before {
+      top: -17px;
+      left: 0;
+    }
+
+    .heart::after {
+      top: 0;
+      left: 17px;
+    }
+
+    .sparkle {
+      position: absolute;
+      z-index: 4;
+      color: #ff5f8f;
+      font-size: 24px;
+      font-weight: 900;
+      animation: floatUp 640ms ease forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      to {
+        opacity: 0;
+        transform: translateY(-44px) scale(1.25);
+      }
+    }
+
+    .cat {
+      position: absolute;
+      left: 50%;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      z-index: 4;
+      width: 118px;
+      height: 126px;
+      transform: translateX(-50%);
+      transition: filter 140ms ease;
+    }
+
+    .cat.catch {
+      filter: drop-shadow(0 0 18px rgba(255, 111, 145, 0.42));
+    }
+
+    .tail {
+      position: absolute;
+      right: -18px;
+      bottom: 26px;
+      width: 52px;
+      height: 24px;
+      border: 12px solid #5d4037;
+      border-left: 0;
+      border-bottom: 0;
+      border-radius: 0 36px 0 0;
+      transform: rotate(18deg);
+      transform-origin: left bottom;
+      animation: tail 1.25s ease-in-out infinite alternate;
+    }
+
+    @keyframes tail {
+      to {
+        transform: rotate(32deg);
+      }
+    }
+
+    .body {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 0;
+      height: 74px;
+      border-radius: 44px 44px 32px 32px;
+      background: linear-gradient(180deg, #fff7ec, #f4dfc8);
+      box-shadow: inset -10px -8px 0 rgba(93, 64, 55, 0.12), 0 12px 24px var(--shadow);
+    }
+
+    .head {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      top: 10px;
+      height: 82px;
+      border-radius: 48% 48% 45% 45%;
+      background:
+        radial-gradient(ellipse at 50% 62%, #6b463d 0 23%, transparent 24%),
+        linear-gradient(180deg, #fff8ed, #f1d8bf);
+      box-shadow: inset -12px -4px 0 rgba(93, 64, 55, 0.1);
+    }
+
+    .ear {
+      position: absolute;
+      top: -8px;
+      width: 34px;
+      height: 38px;
+      border-radius: 8px 28px 8px 28px;
+      background: #5d4037;
+      transform: rotate(28deg);
+    }
+
+    .ear::after {
+      content: "";
+      position: absolute;
+      inset: 9px 8px 8px;
+      border-radius: inherit;
+      background: #c48f86;
+    }
+
+    .ear.left {
+      left: 14px;
+      transform: rotate(-32deg) scaleX(-1);
+    }
+
+    .ear.right {
+      right: 14px;
+    }
+
+    .stripe {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 12px;
+      height: 24px;
+      border-radius: 999px;
+      background: #5d4037;
+      transform: translateX(-50%);
+      box-shadow: -24px 8px 0 -3px #6b463d, 24px 8px 0 -3px #6b463d;
+    }
+
+    .eye {
+      position: absolute;
+      top: 42px;
+      width: 11px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 28%, #ffffff 0 2px, #72a9e8 3px 8px, #315c88 9px);
+    }
+
+    .eye.left {
+      left: 34px;
+    }
+
+    .eye.right {
+      right: 34px;
+    }
+
+    .nose {
+      position: absolute;
+      left: 50%;
+      top: 57px;
+      width: 12px;
+      height: 9px;
+      border-radius: 50% 50% 60% 60%;
+      background: #f39aaa;
+      transform: translateX(-50%);
+    }
+
+    .mouth {
+      position: absolute;
+      left: 50%;
+      top: 65px;
+      width: 28px;
+      height: 13px;
+      border-bottom: 3px solid #5d3b36;
+      border-radius: 0 0 30px 30px;
+      transform: translateX(-50%);
+    }
+
+    .paw {
+      position: absolute;
+      top: 76px;
+      width: 28px;
+      height: 34px;
+      border-radius: 18px;
+      background: #f8e7d0;
+      box-shadow: 0 6px 10px rgba(95, 55, 45, 0.12);
+    }
+
+    .paw.left {
+      left: 18px;
+      transform: rotate(16deg);
+    }
+
+    .paw.right {
+      right: 18px;
+      transform: rotate(-16deg);
+    }
+
+    .hint {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: calc(max(28px, env(safe-area-inset-bottom)) + 132px);
+      z-index: 3;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: rgba(93, 59, 54, 0.66);
+      pointer-events: none;
+    }
+
+    .final {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(255, 238, 226, 0.88);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease;
+    }
+
+    .final.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .final-card {
+      width: min(100%, 360px);
+      padding: 30px 24px;
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 24px 60px rgba(95, 55, 45, 0.2);
+      text-align: center;
+    }
+
+    .final-card .big-cat {
+      margin-bottom: 10px;
+      font-size: 4rem;
+    }
+
+    .final-card h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.55rem, 8vw, 2.35rem);
+      letter-spacing: 0;
+    }
+
+    .final-card p {
+      margin: 0 0 22px;
+      font-size: 1.06rem;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+
+    button {
+      width: min(100%, 220px);
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--rose), #ff9b73);
+      color: white;
+      box-shadow: 0 12px 24px rgba(255, 111, 145, 0.28);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    @media (min-width: 700px) {
+      body {
+        background:
+          radial-gradient(circle at 20% 20%, rgba(149, 217, 195, 0.3), transparent 30%),
+          radial-gradient(circle at 80% 10%, rgba(255, 211, 110, 0.28), transparent 32%),
+          #ffe6d8;
+      }
+
+      .game {
+        height: min(100svh, 880px);
+        border-radius: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game" id="game" aria-label="小猫接爱心小游戏">
+    <section class="hud" aria-live="polite">
+      <div class="topline">
+        <h1>小猫接爱心</h1>
+        <div class="score" id="score">爱心 0/12</div>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+    </section>
+
+    <div class="note show" id="note">小猫今天有个任务：把开心都接住送给丫蛋。</div>
+    <div class="playfield" id="playfield"></div>
+    <div class="hint">按住移动小猫，接住掉下来的爱心</div>
+
+    <div class="cat" id="cat" aria-hidden="true">
+      <div class="tail"></div>
+      <div class="body"></div>
+      <div class="head">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="stripe"></div>
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="nose"></div>
+        <div class="mouth"></div>
+        <div class="paw left"></div>
+        <div class="paw right"></div>
+      </div>
+    </div>
+
+    <section class="final" id="final" aria-live="polite">
+      <div class="final-card">
+        <div class="big-cat">🐱💝</div>
+        <h2>任务完成</h2>
+        <p id="finalText"></p>
+        <button type="button" id="restart">再玩一次</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const CONFIG = {
+      nickname: "丫蛋",
+      targetScore: 12,
+      intro: "小猫今天有个任务：把开心都接住送给{nickname}。",
+      final: "丫蛋把所有喜欢都给姑姑啦",
+      messages: [
+        { milestone: 3, text: "你笑起来的时候，整个世界都会变软。" },
+        { milestone: 6, text: "今天的小猫也站在你这边。" },
+        { milestone: 9, text: "不管今天累不累，都想抱抱你。" },
+        { milestone: 12, text: "收集完成：你被认真喜欢着。" }
+      ]
+    };
+
+    const game = document.getElementById("game");
+    const playfield = document.getElementById("playfield");
+    const cat = document.getElementById("cat");
+    const scoreEl = document.getElementById("score");
+    const progressEl = document.getElementById("progress");
+    const note = document.getElementById("note");
+    const final = document.getElementById("final");
+    const finalText = document.getElementById("finalText");
+    const restart = document.getElementById("restart");
+
+    const state = {
+      score: 0,
+      catX: 0.5,
+      targetX: 0.5,
+      hearts: [],
+      lastFrame: 0,
+      spawnTimer: 0,
+      running: true,
+      nextMessageIndex: 0,
+      noteTimer: 0
+    };
+
+    function copy(text) {
+      return text.replaceAll("{nickname}", CONFIG.nickname);
+    }
+
+    function setNote(text, duration = 1900) {
+      note.textContent = text;
+      note.classList.add("show");
+      clearTimeout(state.noteTimer);
+      state.noteTimer = setTimeout(() => note.classList.remove("show"), duration);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function updateCatPosition() {
+      const gameWidth = game.clientWidth;
+      const catWidth = cat.offsetWidth;
+      state.catX += (state.targetX - state.catX) * 0.24;
+      const left = clamp(state.catX * gameWidth, catWidth / 2, gameWidth - catWidth / 2);
+      cat.style.left = `${left}px`;
+    }
+
+    function setTargetFromClientX(clientX) {
+      const rect = game.getBoundingClientRect();
+      state.targetX = clamp((clientX - rect.left) / rect.width, 0, 1);
+    }
+
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      const size = 28 + Math.random() * 14;
+      const x = 24 + Math.random() * (game.clientWidth - 72);
+      const speed = 112 + Math.random() * 74;
+      heart.style.width = `${size}px`;
+      heart.style.height = `${size}px`;
+      heart.style.left = `${x}px`;
+      heart.style.top = "-50px";
+      playfield.appendChild(heart);
+      state.hearts.push({ el: heart, x, y: -50, size, speed });
+    }
+
+    function updateHud() {
+      scoreEl.textContent = `爱心 ${state.score}/${CONFIG.targetScore}`;
+      progressEl.style.width = `${(state.score / CONFIG.targetScore) * 100}%`;
+    }
+
+    function showSparkle(x, y) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "sparkle";
+      sparkle.textContent = "+1";
+      sparkle.style.left = `${x}px`;
+      sparkle.style.top = `${y}px`;
+      playfield.appendChild(sparkle);
+      sparkle.addEventListener("animationend", () => sparkle.remove(), { once: true });
+    }
+
+    function catchHeart(heart) {
+      heart.el.remove();
+      state.score += 1;
+      updateHud();
+      showSparkle(heart.x, heart.y);
+      cat.classList.add("catch");
+      setTimeout(() => cat.classList.remove("catch"), 160);
+
+      const message = CONFIG.messages[state.nextMessageIndex];
+      if (message && state.score >= message.milestone) {
+        state.nextMessageIndex += 1;
+        setNote(message.text, state.score >= CONFIG.targetScore ? 1200 : 2100);
+      }
+
+      if (state.score >= CONFIG.targetScore) {
+        finishGame();
+      }
+    }
+
+    function updateHearts(delta) {
+      const catRect = cat.getBoundingClientRect();
+      const gameRect = game.getBoundingClientRect();
+      const remaining = [];
+
+      for (const heart of state.hearts) {
+        heart.y += heart.speed * delta;
+        heart.el.style.top = `${heart.y}px`;
+
+        const heartRect = heart.el.getBoundingClientRect();
+        const overlaps =
+          heartRect.left < catRect.right - 18 &&
+          heartRect.right > catRect.left + 18 &&
+          heartRect.top < catRect.bottom - 8 &&
+          heartRect.bottom > catRect.top + 22;
+
+        if (overlaps) {
+          catchHeart(heart);
+        } else if (heart.y > gameRect.height + 60) {
+          heart.el.remove();
+        } else {
+          remaining.push(heart);
+        }
+      }
+
+      state.hearts = remaining;
+    }
+
+    function loop(timestamp) {
+      if (!state.lastFrame) state.lastFrame = timestamp;
+      const delta = Math.min(0.04, (timestamp - state.lastFrame) / 1000);
+      state.lastFrame = timestamp;
+
+      updateCatPosition();
+
+      if (state.running) {
+        state.spawnTimer -= delta;
+        if (state.spawnTimer <= 0) {
+          createHeart();
+          state.spawnTimer = Math.max(0.42, 0.92 - state.score * 0.025);
+        }
+        updateHearts(delta);
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    function finishGame() {
+      if (!state.running) return;
+      state.running = false;
+      setTimeout(() => {
+        finalText.textContent = copy(CONFIG.final);
+        final.classList.add("show");
+      }, 700);
+    }
+
+    function resetGame() {
+      state.score = 0;
+      state.catX = 0.5;
+      state.targetX = 0.5;
+      state.lastFrame = 0;
+      state.spawnTimer = 0;
+      state.running = true;
+      state.nextMessageIndex = 0;
+      state.hearts.forEach((heart) => heart.el.remove());
+      state.hearts = [];
+      final.classList.remove("show");
+      updateHud();
+      setNote(copy(CONFIG.intro), 2500);
+    }
+
+    game.addEventListener("pointerdown", (event) => {
+      setTargetFromClientX(event.clientX);
+      game.setPointerCapture(event.pointerId);
+    });
+
+    game.addEventListener("pointermove", (event) => {
+      if (event.buttons || event.pointerType === "touch") {
+        setTargetFromClientX(event.clientX);
+      }
+    });
+
+    window.addEventListener("mousemove", (event) => {
+      if (event.buttons === 0) setTargetFromClientX(event.clientX);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+        state.targetX = clamp(state.targetX - 0.08, 0, 1);
+      }
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+        state.targetX = clamp(state.targetX + 0.08, 0, 1);
+      }
+    });
+
+    restart.addEventListener("click", resetGame);
+
+    resetGame();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
