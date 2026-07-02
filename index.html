@@ -210,10 +210,54 @@
       pointer-events: none;
     }
 
+    .catch-burst {
+      position: absolute;
+      z-index: 4;
+      width: 74px;
+      height: 74px;
+      border: 3px solid rgba(255, 111, 145, 0.58);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0.35);
+      animation: catchBurst 520ms ease-out forwards;
+      pointer-events: none;
+    }
+
+    .catch-burst::before,
+    .catch-burst::after {
+      content: "✦";
+      position: absolute;
+      color: #ffd36e;
+      font-size: 24px;
+      font-weight: 900;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .catch-burst::before {
+      left: -8px;
+      top: 18px;
+    }
+
+    .catch-burst::after {
+      right: -4px;
+      top: 0;
+      color: #95d9c3;
+    }
+
     @keyframes floatUp {
       to {
         opacity: 0;
         transform: translateY(-44px) scale(1.25);
+      }
+    }
+
+    @keyframes catchBurst {
+      70% {
+        opacity: 0.85;
+      }
+
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.42);
       }
     }
 
@@ -230,6 +274,7 @@
 
     .cat.catch {
       filter: drop-shadow(0 0 18px rgba(255, 111, 145, 0.42));
+      animation: cat-pounce 420ms cubic-bezier(0.2, 1.2, 0.3, 1);
     }
 
     .cat img {
@@ -245,6 +290,24 @@
     @keyframes catFloat {
       to {
         transform: translateY(-5px);
+      }
+    }
+
+    @keyframes cat-pounce {
+      0% {
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+
+      42% {
+        transform: translateX(-50%) translateY(-18px) scale(1.08, 0.94);
+      }
+
+      72% {
+        transform: translateX(-50%) translateY(3px) scale(0.96, 1.05);
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(0) scale(1);
       }
     }
 
@@ -355,7 +418,7 @@
     <div class="hint">按住移动小猫，接住掉下来的爱心</div>
 
     <div class="cat" id="cat">
-      <img src="assets/cat-generated.png?v=generated-cat-1" alt="丫蛋小猫">
+      <img src="assets/cat-cutout.png?v=cutout-2" alt="丫蛋小猫">
     </div>
 
     <section class="final" id="final" aria-live="polite">
@@ -459,6 +522,13 @@
       sparkle.style.top = `${y}px`;
       playfield.appendChild(sparkle);
       sparkle.addEventListener("animationend", () => sparkle.remove(), { once: true });
+
+      const burst = document.createElement("div");
+      burst.className = "catch-burst";
+      burst.style.left = `${x}px`;
+      burst.style.top = `${y}px`;
+      playfield.appendChild(burst);
+      burst.addEventListener("animationend", () => burst.remove(), { once: true });
     }
 
     function catchHeart(heart) {
@@ -466,8 +536,10 @@
       state.score += 1;
       updateHud();
       showSparkle(heart.x, heart.y);
+      cat.classList.remove("catch");
+      void cat.offsetWidth;
       cat.classList.add("catch");
-      setTimeout(() => cat.classList.remove("catch"), 160);
+      setTimeout(() => cat.classList.remove("catch"), 430);
 
       const message = CONFIG.messages[state.nextMessageIndex];
       if (message && state.score >= message.milestone) {
